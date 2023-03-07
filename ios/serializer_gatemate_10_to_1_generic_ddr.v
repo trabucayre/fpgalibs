@@ -10,8 +10,7 @@ module serializer (
 	input  wire       fast_clk_i, // must be ref_clk frequency x (n / 2)
 	input  wire       rst,
 	input  wire [9:0] dat_i,
-	output wire       dat_o_p,
-	output wire       dat_o_n
+	output wire       dat_o
 );
 
 	/* detect ref_clk_i edge */
@@ -35,13 +34,11 @@ module serializer (
 			dat_pos <= {2'b0, dat_pos[9:2]};
 	end
 
-	CC_ODDR dat_ddr_pos (.CLK(~fast_clk_i), .DDR(fast_clk_i),
-		.D0(dat_pos[0]), .D1(dat_pos[1]),
-		.Q(dat_o_p)
-	);
-	CC_ODDR dat_ddr_neg (.CLK(~fast_clk_i), .DDR(fast_clk_i),
-		.D0(~dat_pos[0]), .D1(~dat_pos[1]),
-		.Q(dat_o_n)
+	CC_ODDR #(
+		.CLK_INV(1'b0)
+	) ddr_inst (.CLK(fast_clk_i), .DDR(fast_clk_i),
+		.D0(~dat_pos[1]), .D1(~dat_pos[0]),
+		.Q(dat_o)
 	);
 
 endmodule
