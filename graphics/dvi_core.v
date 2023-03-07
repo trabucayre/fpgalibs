@@ -18,10 +18,8 @@ module dvi_core (
 	input  wire [7:0] pix_g,
 	input  wire [7:0] pix_b,
 	// output signals
-	output wire       TMDS_clk_p,
-	output wire       TMDS_clk_n,
-	output wire [2:0] TMDS_data_p,
-	output wire [2:0] TMDS_data_n
+	output wire       TMDS_clk,
+	output wire [2:0] TMDS_data
 );
 	wire [9:0] red2_s, green2_s, blue2_s;
 
@@ -37,9 +35,9 @@ module dvi_core (
 
 	/* clock serializer */
 	serializer serClk(.ref_clk_i(clk_pix), .fast_clk_i(clk_dvi), .rst(rst),
-		.dat_i(10'b0000011111), .dat_o_p(TMDS_clk_p), .dat_o_n(TMDS_clk_n));
+		.dat_i(10'b0000011111), .dat_o(TMDS_clk));
 
 	/* data serializer */
 	serializer serDat[2:0](.ref_clk_i(clk_pix), .fast_clk_i(clk_dvi), .rst(rst),
-		.dat_i({red2_s, green2_s, blue2_s}), .dat_o_p(TMDS_data_p), .dat_o_n(TMDS_data_n));
+		.dat_i({red2_s, green2_s, blue2_s}), .dat_o(TMDS_data));
 endmodule
