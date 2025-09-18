@@ -1,7 +1,7 @@
 /*
  * gatemate_25MHz_125MHz_pll.v
  *
- * Copyright (C) 2022  Gwenhael Goavec-Merou <gwenhael.goavec-merou@trabucayre.com>
+ * Copyright (C) 2022-2025  Gwenhael Goavec-Merou <gwenhael.goavec-merou@trabucayre.com>
  * SPDX-License-Identifier: MIT
  */
 
@@ -35,6 +35,7 @@ endmodule
 
 module pll (
 	input  wire clock_in,
+	input  wire rstn_in,
 	output wire clock_out,
 	output wire clock_5x_out,
 	output reg  lock_out
@@ -52,14 +53,19 @@ CC_PLL #(
 	.CP_FILTER_CONST(4)  // optional CP filter constant
 ) pll125 (
 	.CLK_REF(clock_in), .CLK_FEEDBACK(1'b0), .USR_CLK_REF(1'b0),
+	/* USR_LOCKED_STDY_RST and USR_PLL_LOCKED_STDY are more or less
+	 * for debug purpose. USR_PLL_LOCKED_STDY is high after first lock
+	 * goes low if PLL unlock and stay low until USR_LOCKED_STDY_RST is
+	 * set during 2 clock cycles
+	 */
 	.USR_LOCKED_STDY_RST(1'b0), .USR_PLL_LOCKED_STDY(usr_pll_lock_stdy), .USR_PLL_LOCKED(usr_pll_lock),
 	.CLK270(), .CLK180(), .CLK90(), .CLK0(clock_5x_out), .CLK_REF_OUT()
 );
 
 // reset is synced the clock
-reg locked_s1 = 1'b0;
+reg locked_s1;
 always @(posedge clock_5x_out) begin
-	locked_s1 <= usr_pll_lock;
+	locked_s1 <= usr_pll_lock || rstn_in;
 	lock_out <= locked_s1;
 end
 
